@@ -20,14 +20,14 @@ class GreetingServer(HTTPServerEntryBase):
     routes = routes
 
     def init_options(self, io_loop):
-        register_postgres_options('master',
+        register_postgres_options('main',
                                   'postgres://devel:d3v3l@localhost/devel')
-        register_postgres_options('slave',
+        register_postgres_options('subordinate',
                                   'postgres://devel:d3v3l@localhost/devel')
 
     def init_app(self, io_loop):
-        io_loop.run_sync(connect_postgres('master'))
-        io_loop.run_sync(connect_postgres('slave'))
+        io_loop.run_sync(connect_postgres('main'))
+        io_loop.run_sync(connect_postgres('subordinate'))
 
 
 start = GreetingServer()

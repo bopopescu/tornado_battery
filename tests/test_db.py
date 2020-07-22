@@ -28,8 +28,8 @@ class User(BaseModel):
 @pytest.fixture
 async def db():
     repl = Replications.instance()
-    repl.add('master', 'postgres://test:test@127.0.0.1/test')
-    repl.add('slave', 'postgres://test:test@127.0.0.1/test')
+    repl.add('main', 'postgres://test:test@127.0.0.1/test')
+    repl.add('subordinate', 'postgres://test:test@127.0.0.1/test')
     with pytest.raises(NotImplementedError, match='only support postgresql'):
         repl.add('error', 'mysql://test:test@127.0.0.1/test')
     man = ReplicationManager.instance()
@@ -41,22 +41,22 @@ async def test_orm_stack(db):
 
     orms = []
 
-    @use_orm('master')
+    @use_orm('main')
     @with_orm
-    async def _within_master(orm):
+    async def _within_main(orm):
         orms.append(orm)
 
-    @use_orm('slave')
+    @use_orm('subordinate')
     @with_orm
-    async def _within_slave(orm):
+    async def _within_subordinate(orm):
         orms.append(orm)
 
-    @use_orm('master')
+    @use_orm('main')
     @with_orm
     async def _run(orm):
         orms.append(orm)
-        await _within_master()
-        await _within_slave()
+        await _within_main()
+        await _within_subordinate()
         orms.append(orm)
 
     await _run()
@@ -70,23 +70,23 @@ async def test_orm_stack_async(db):
 
     orms = []
 
-    @use_orm('master')
+    @use_orm('main')
     @with_orm
-    async def _within_master(orm):
+    async def _within_main(orm):
         await sleep(0.5)
         orms.append(orm)
 
-    @use_orm('slave')
+    @use_orm('subordinate')
     @with_orm
-    async def _within_slave(orm):
+    async def _within_subordinate(orm):
         await sleep(0.2)
         orms.append(orm)
 
-    @use_orm('master')
+    @use_orm('main')
     @with_orm
     async def _run(orm):
         orms.append(orm)
-        done, _ = await multi([_within_master(), _within_slave()])
+        done, _ = await multi([_within_main(), _within_subordinate()])
         orms.append(orm)
 
     await _run()
@@ -98,7 +98,7 @@ async def test_orm_stack_async(db):
 @pytest.mark.asyncio
 async def test_orm_model(db):
 
-    @use_orm('master')
+    @use_orm('main')
     @with_orm
     async def _run(orm):
         await orm.execute(User.raw("""

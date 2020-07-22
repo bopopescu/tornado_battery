@@ -91,7 +91,7 @@ def option_name(instance: str, option: str) -> str:
     return f'queue-{instance}-{option}'
 
 
-def register_queue_options(instance: str='master',
+def register_queue_options(instance: str='main',
                            default_uri: str='amqp://'):
     define(option_name(instance, 'uri'),
            default=default_uri,

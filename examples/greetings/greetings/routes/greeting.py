@@ -20,7 +20,7 @@ class QuoteList(Schema):
 class AddController(RequestHandler):
 
     @schema(reply=QuoteList(strict=True))
-    @with_postgres(name='slave')
+    @with_postgres(name='subordinate')
     async def get(self, db):
         async with db.cursor() as cursor:
             await cursor.execute('SELECT quote FROM quotes ORDER BY RANDOM()')
@@ -30,7 +30,7 @@ class AddController(RequestHandler):
         return dict(code=0, msg='ok', data=dict(quotes=rows))
 
     @schema(json=Quote(strict=True), reply=True)
-    @with_postgres(name='master')
+    @with_postgres(name='main')
     async def post(self, db, json):
         async with db.cursor() as cursor:
             await cursor.execute('INSERT INTO quotes(quote) VALUES(%(quote)s)',

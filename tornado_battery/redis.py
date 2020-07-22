@@ -89,7 +89,7 @@ def option_name(instance: str, option: str) -> str:
     return f'redis-{instance}-{option}'
 
 
-def register_redis_options(instance: str = 'master',
+def register_redis_options(instance: str = 'main',
                            default_uri: str = 'redis://'):
     define(option_name(instance, 'uri'),
            default=default_uri,

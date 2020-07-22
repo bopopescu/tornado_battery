@@ -90,7 +90,7 @@ def option_name(instance: str, option: str) -> str:
     return f'mysql-{instance}-{option}'
 
 
-def register_mysql_options(instance: str='master',
+def register_mysql_options(instance: str='main',
                            default_uri: str='mysql://'):
     define(option_name(instance, 'uri'),
            default=default_uri,

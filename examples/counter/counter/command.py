@@ -25,26 +25,26 @@ LOG = logging.getLogger("tornado.application")
 @route("/api/v1/counter")
 class AddController(JSONController):
 
-    @with_redis(name="slave")
+    @with_redis(name="subordinate")
     async def get(self, redis):
         name = self.get_argument("name", "default")
         value = await redis.execute('get', 'counter-%s' % name)
         self.reply(name=name, counter=value)
 
-    @with_redis(name="master")
+    @with_redis(name="main")
     async def post(self, redis):
         name = self.get_argument("name", "default")
         await redis.execute('incr', 'counter-%s' % name)
         value = await self.nested_redis_incr(name)
         self.reply(name=name, counter=value)
 
-    @with_redis(name="master")
+    @with_redis(name="main")
     async def nested_redis_incr(self, name, redis):
         await redis.execute('incr', 'counter-%s' % name)
         value = await self.nested_redis_check(name)
         return value
 
-    @with_redis(name="slave")
+    @with_redis(name="subordinate")
     async def nested_redis_check(self, name, redis):
         value = await redis.execute('get', 'counter-%s' % name)
         await async_sleep(5)
@@ -55,12 +55,12 @@ class AddController(JSONController):
 class GreetingServer(CommandMixin):
 
     def setup(self):
-        register_redis_options("master", "redis://localhost/0")
-        register_redis_options("slave", "redis://localhost/0")
+        register_redis_options("main", "redis://localhost/0")
+        register_redis_options("subordinate", "redis://localhost/0")
 
     def before_run(self, io_loop):
-        io_loop.run_sync(connect_redis("master"))
-        io_loop.run_sync(connect_redis("slave"))
+        io_loop.run_sync(connect_redis("main"))
+        io_loop.run_sync(connect_redis("subordinate"))
 
         app = WebApplication(route.get_routes(), autoreload=options.debug)
         app.listen(8000, "0.0.0.0")

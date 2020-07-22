@@ -23,14 +23,14 @@ LOG = logging.getLogger("app.biz")
 @route("/api/v1/greetings_mysql")
 class AddController(JSONController):
 
-    @with_mysql(name="slave")
+    @with_mysql(name="subordinate")
     async def get(self, db):
         async with db.cursor() as cursor:
             await cursor.execute("SELECT quote FROM quotes ORDER BY RAND()")
             row = await cursor.fetchone()
         self.reply(quote=row[0])
 
-    @with_mysql(name="master")
+    @with_mysql(name="main")
     async def post(self, db):
         async with db.cursor() as cursor:
             await cursor.execute("INSERT INTO quotes(quote) VALUES(%(quote)s)",
@@ -41,12 +41,12 @@ class AddController(JSONController):
 class GreetingServer(CommandMixin):
 
     def setup(self, io_loop):
-        register_mysql_options("master", "mysql://root:root@172.17.0.2/test")
-        register_mysql_options("slave", "mysql://root:root@172.17.0.2/test")
+        register_mysql_options("main", "mysql://root:root@172.17.0.2/test")
+        register_mysql_options("subordinate", "mysql://root:root@172.17.0.2/test")
 
     def before_run(self, io_loop):
-        io_loop.run_sync(connect_mysql("master"))
-        io_loop.run_sync(connect_mysql("slave"))
+        io_loop.run_sync(connect_mysql("main"))
+        io_loop.run_sync(connect_mysql("subordinate"))
 
         app = WebApplication(route.get_routes(), autoreload=options.debug)
         app.listen(8000, "0.0.0.0")

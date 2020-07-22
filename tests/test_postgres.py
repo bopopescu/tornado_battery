@@ -72,5 +72,5 @@ async def test_invalid_connection_scheme():
 async def test_option_name():
     from tornado_battery.postgres import option_name
 
-    assert option_name('master', 'uri') == 'postgres-master-uri'
-    assert option_name('slave', 'uri') == 'postgres-slave-uri'
+    assert option_name('main', 'uri') == 'postgres-main-uri'
+    assert option_name('subordinate', 'uri') == 'postgres-subordinate-uri'
